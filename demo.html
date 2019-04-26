@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>three.js css3d - periodic table</title>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>签到、投票元素周期表动画效果</title>
+    <link href="animate.min.css" rel="stylesheet" media="all">
+</head>
+<body>
+
+<script src="jquery-1.8.2.min.js"></script>
+<script src="three.min.js"></script>
+<script src="tween.min.js"></script>
+<script src="TrackballControls.js"></script>
+<script src="CSS3DRenderer.js"></script>
+
+<div id="container"></div>
+<div id="menu">
+    <button id="table">表格</button>
+    <button id="sphere">球体</button>
+    <button id="helix">螺旋</button>
+    <button id="grid">网格</button>
+</div>
+
+<div class="show_info animated" style="display: none;">
+    <div class="info_my">
+        <img src="touxiang.jpg">
+        <div class="info_mem">
+            <div class="nickname">降省心</div>
+            <div class="id">ID:082037</div>
+            <div class="vote">票数：99</div>
+        </div>
+    </div>
+    <div class="intro">你说世间什么最难得，徒手摘星， 爱而不得，世人万千， 再难遇我。</div>
+</div>
+
+<script>
+
+    var CurPersonNum = 30;
+
+    //动画约束
+    var _in = ['bounceIn', 'bounceInDown', 'bounceInLeft', 'bounceInRight', 'bounceInUp', 'fadeIn', 'fadeInDown', 'fadeInDownBig', 'fadeInLeft', 'fadeInLeftBig', 'fadeInRight', 'fadeInRightBig', 'fadeInUp', 'fadeInUpBig', 'rotateIn', 'rotateInDownLeft', 'rotateInDownRight', 'rotateInUpLeft', 'rotateInUpRight', 'slideInDown', 'slideInLeft', 'slideInRight'];
+    var _out = ['bounceOut', 'bounceOutDown', 'bounceOutLeft', 'bounceOutRight', 'bounceOutUp', 'fadeOut', 'fadeOutDown', 'fadeOutDownBig', 'fadeOutLeft', 'fadeOutLeftBig', 'fadeOutRight', 'fadeOutRightBig', 'fadeOutUp', 'fadeOutUpBig', 'rotateOut', 'rotateOutDownLeft', 'rotateOutDownRight', 'rotateOutUpLeft', 'rotateOutUpRight', 'slideOutDown', 'slideOutLeft', 'slideOutRight'];
+
+    // 模拟推送数据
+    var s = setInterval(function () {
+        // get animate
+        var rand_in = parseInt(Math.random() * _in.length, 10);
+        var rand_out = parseInt(Math.random() * _out.length, 10);
+
+        $('.show_info').show();
+        $('.show_info').addClass(_in[rand_in]);
+
+        if (CurPersonNum >= table.length) {
+            CurPersonNum = 0;
+        }
+        setTimeout(function () {
+
+            $('.show_info').removeClass(_in[rand_in]);
+
+            // 更改展示的图片
+            var img = document.getElementsByClassName('element')[CurPersonNum].getElementsByTagName('img')[0];
+            img.setAttribute('src', 'touxiang.jpg');
+            document.getElementsByClassName('element')[CurPersonNum].getElementsByClassName('details')[0].innerHTML = CurPersonNum;
+            ++CurPersonNum;
+
+            //卡片关闭效果
+            setTimeout(function () {
+                $('.show_info').addClass(_out[rand_out]);
+                setTimeout(function () {
+                    $('.show_info').removeClass(_out[rand_out]);
+                    $('.show_info').hide();
+                }, 1000);
+            }, 1500);
+
+        }, 1000);
+    }, 4500);
+
+    var table = [
+        /*{
+            'name':'Name',
+            'p_x':1,
+            'p_y':1,
+            'image':'touxiang.jpg'
+        }*/
+    ];
+    for (var i = 0; i < 120; i++) {
+        table.push({
+            'name': i,
+            'p_x': i % 15 + 1,
+            'p_y': parseInt(i / 15) + 1,
+            'image': ''
+        })
+
+    }
+
+    var camera, scene, renderer;
+    var controls;
+
+    var objects = [];
+    var targets = {table: [], sphere: [], helix: [], grid: []};
+
+    init();
+    animate();
+
+
+    /**
+     * 生成卡片
+     *
+     * @param info
+     */
+    function pushCard(info) {
+
+        var element = document.createElement('div');
+        element.className = 'element';
+        element.style.backgroundColor = 'rgba(0,127,127,' + (Math.random() * 0.5 + 0.25) + ')';
+
+        var symbol = document.createElement('div');
+        symbol.className = 'symbol';
+        element.appendChild(symbol);
+
+        var img = document.createElement('img');
+        img.src = info.image;
+        symbol.appendChild(img);
+
+        var details = document.createElement('div');
+        details.className = 'details';
+        details.innerHTML = '';
+        element.appendChild(details);
+
+
+        var object = new THREE.CSS3DObject(element);
+        object.position.x = Math.random() * 4000 - 2000;
+        object.position.y = Math.random() * 4000 - 2000;
+        object.position.z = Math.random() * 4000 - 2000;
+        scene.add(object);
+
+        objects.push(object);
+
+        //表格坐标进行排序
+        var object = new THREE.Object3D();
+        object.position.x = (info.p_x * 140) - 1330;
+        object.position.y = -(info.p_y * 180) + 990;
+
+        targets.table.push(object);
+
+        return objects;
+    }
+
+
+    /**
+     * 卡片初始化
+     */
+    function initCard(objects) {
+        // sphere
+        var vector = new THREE.Vector3();
+        for (var i = 0, l = objects.length; i < l; i++) {
+
+            var phi = Math.acos(-1 + (2 * i) / l);
+            var theta = Math.sqrt(l * Math.PI) * phi;
+
+            var object = new THREE.Object3D();
+
+            object.position.setFromSphericalCoords(800, phi, theta);
+
+            vector.copy(object.position).multiplyScalar(2);
+
+            object.lookAt(vector);
+
+            targets.sphere.push(object);
+
+        }
+
+        // helix
+        var vector = new THREE.Vector3();
+        for (var i = 0, l = objects.length; i < l; i++) {
+
+            var theta = i * 0.175 + Math.PI;
+            var y = -(i * 8) + 450;
+
+            var object = new THREE.Object3D();
+
+            object.position.setFromCylindricalCoords(900, theta, y);
+
+            vector.x = object.position.x * 2;
+            vector.y = object.position.y;
+            vector.z = object.position.z * 2;
+
+            object.lookAt(vector);
+
+            targets.helix.push(object);
+
+        }
+
+        // grid
+        for (var i = 0; i < objects.length; i++) {
+
+            var object = new THREE.Object3D();
+
+            object.position.x = ((i % 5) * 400) - 800;
+            object.position.y = (-(Math.floor(i / 5) % 5) * 400) + 800;
+            object.position.z = (Math.floor(i / 25)) * 1000 - 2000;
+
+            targets.grid.push(object);
+
+        }
+    }
+
+    function init() {
+
+        camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 10000);
+        camera.position.z = 3000;
+
+        scene = new THREE.Scene();
+
+        // table
+        for (var i = 0; i < table.length; i++) {
+            var objects = pushCard(table[i])
+        }
+
+        initCard(objects)
+
+        //渲染
+        renderer = new THREE.CSS3DRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('container').appendChild(renderer.domElement);
+
+        //鼠标控制
+        controls = new THREE.TrackballControls(camera, renderer.domElement);
+        controls.rotateSpeed = 0.5;
+        controls.minDistance = 500;
+        controls.maxDistance = 6000;
+        controls.addEventListener('change', render);
+
+
+        // 自动更换
+        var ini = 0;
+        setInterval(function () {
+            ini = ini >= 3 ? 0 : ini;
+            ++ini;
+            switch (ini) {
+                case 1:
+                    transform(targets.sphere, 1000);
+                    break;
+                case 2:
+                    transform(targets.helix, 1000);
+                    break;
+                case 3:
+                    transform(targets.grid, 1000);
+                    break;
+            }
+        }, 8000);
+
+
+        var button = document.getElementById('table');
+        button.addEventListener('click', function () {
+
+            transform(targets.table, 2000);
+
+        }, false);
+
+        var button = document.getElementById('sphere');
+        button.addEventListener('click', function () {
+
+            transform(targets.sphere, 2000);
+
+        }, false);
+
+        var button = document.getElementById('helix');
+        button.addEventListener('click', function () {
+            transform(targets.helix, 2000);
+
+        }, false);
+
+        var button = document.getElementById('grid');
+        button.addEventListener('click', function () {
+            transform(targets.grid, 2000);
+
+        }, false);
+
+        transform(targets.table, 2000);
+
+        //
+
+        window.addEventListener('resize', onWindowResize, false);
+
+    }
+
+    function transform(targets, duration) {
+
+        TWEEN.removeAll();
+
+        for (var i = 0; i < objects.length; i++) {
+
+            var object = objects[i];
+            var target = targets[i];
+
+            new TWEEN.Tween(object.position)
+                .to({
+                    x: target.position.x,
+                    y: target.position.y,
+                    z: target.position.z
+                }, Math.random() * duration + duration)
+                .easing(TWEEN.Easing.Exponential.InOut)
+                .start();
+
+            new TWEEN.Tween(object.rotation)
+                .to({
+                    x: target.rotation.x,
+                    y: target.rotation.y,
+                    z: target.rotation.z
+                }, Math.random() * duration + duration)
+                .easing(TWEEN.Easing.Exponential.InOut)
+                .start();
+
+        }
+
+        new TWEEN.Tween(this)
+            .to({}, duration * 2)
+            .onUpdate(render)
+            .start();
+
+    }
+
+    function onWindowResize() {
+
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        render();
+
+    }
+
+    function animate() {
+
+
+        //scene.rotation.x += 0.009;
+        scene.rotation.y += 0.008;
+
+        requestAnimationFrame(animate);
+
+        TWEEN.update();
+
+        controls.update();
+
+        //循环渲染
+        render();
+
+    }
+
+    function render() {
+
+        renderer.render(scene, camera);
+
+    }
+
+</script>
+</body>
+</html>
