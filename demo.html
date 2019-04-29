@@ -25,6 +25,8 @@
     <button id="grid">网格</button>
     <button id="pause">暂停</button>
     <button id="close">关闭</button>
+    <button id="add">创建</button>
+    <button id="remove">减少</button>
 </div>
 
 <div class="show_info animated" style="display: none;">
@@ -348,9 +350,6 @@
             requestAnimationFrame(animate);
             TWEEN.update();
             controls.update();
-        } else {
-            TWEEN.removeAll();
-            controls.dispose()
         }
 
         //循环渲染
@@ -373,6 +372,50 @@
     //动画关闭
     $('#close').click(function () {
         clearScene()
+    })
+
+    //减少卡片
+    $('#add').click(function () {
+
+        var info = {
+            'name': objects.length+100,
+            'p_x': objects.length+100 % 15 + 1,
+            'p_y': parseInt(objects.length+100 / 15) + 1,
+            'image': ''
+        }
+
+        var element = document.createElement('div');
+        element.className = 'element';
+        element.style.backgroundColor = 'rgba(0,127,127,' + (Math.random() * 0.5 + 0.25) + ')';
+
+        var symbol = document.createElement('div');
+        symbol.className = 'symbol';
+        element.appendChild(symbol);
+
+        var img = document.createElement('img');
+        img.src = info.image;
+        symbol.appendChild(img);
+
+        var details = document.createElement('div');
+        details.className = 'details';
+        details.innerHTML = '';
+        element.appendChild(details);
+
+
+        var object = new THREE.CSS3DObject(element);
+        object.position.x = Math.random() * 4000 - 2000;
+        object.position.y = Math.random() * 4000 - 2000;
+        object.position.z = Math.random() * 4000 - 2000;
+        scene.add(object);
+
+    })
+
+    //增加卡片
+    $('#remove').click(function () {
+        $.each(objects.splice(1,10),function (k,v) {
+            console.log(v)
+            scene.remove(v);
+        })
     })
 
 
