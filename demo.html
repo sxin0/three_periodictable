@@ -23,6 +23,8 @@
     <button id="sphere">球体</button>
     <button id="helix">螺旋</button>
     <button id="grid">网格</button>
+    <button id="pause">暂停</button>
+    <button id="close">关闭</button>
 </div>
 
 <div class="show_info animated" style="display: none;">
@@ -40,6 +42,7 @@
 <script>
 
     var CurPersonNum = 30;
+    var threeStop = false;
 
     //动画约束
     var _in = ['bounceIn', 'bounceInDown', 'bounceInLeft', 'bounceInRight', 'bounceInUp', 'fadeIn', 'fadeInDown', 'fadeInDownBig', 'fadeInLeft', 'fadeInLeftBig', 'fadeInRight', 'fadeInRightBig', 'fadeInUp', 'fadeInUpBig', 'rotateIn', 'rotateInDownLeft', 'rotateInDownRight', 'rotateInUpLeft', 'rotateInUpRight', 'slideInDown', 'slideInLeft', 'slideInRight'];
@@ -340,13 +343,15 @@
 
 
         //scene.rotation.x += 0.009;
-        scene.rotation.y += 0.008;
-
-        requestAnimationFrame(animate);
-
-        TWEEN.update();
-
-        controls.update();
+        if(!threeStop) {
+            scene.rotation.y += 0.008;
+            requestAnimationFrame(animate);
+            TWEEN.update();
+            controls.update();
+        } else {
+            TWEEN.removeAll();
+            controls.dispose()
+        }
 
         //循环渲染
         render();
@@ -357,6 +362,58 @@
 
         renderer.render(scene, camera);
 
+    }
+
+    //动画暂停
+    $('#pause').click(function () {
+        threeStop = !threeStop;
+        animate()
+    })
+
+    //动画关闭
+    $('#close').click(function () {
+        clearScene()
+        deleteGroup()
+    })
+
+
+    /**
+     * 清除模型，模型中有 group 和 scene,需要进行判断
+     * @param scene
+     * @returns
+     */
+    function clearScene(){
+        // 从scene中删除模型并释放内存
+        if(objects.length > 0){
+            for(var i = 0; i< objects.length; i++){
+                var currObj = objects[i];
+
+                // 判断类型
+                if(currObj instanceof THREE.Scene){
+                    var children = currObj.children;
+                    for(var i = 0; i< children.length; i++){
+                        deleteGroup(children[i]);
+                    }
+                }else{
+                    deleteGroup(currObj);
+                }
+                scene.remove(currObj);
+            }
+        }
+    }
+
+
+    // 删除group，释放内存
+    function deleteGroup(group) {
+        //console.log(group);
+        if (!group) return;
+        // 删除掉所有的模型组内的mesh
+        group.traverse(function (item) {
+            if (item instanceof THREE.Mesh) {
+                item.geometry.dispose(); // 删除几何体
+                item.material.dispose(); // 删除材质
+            }
+        });
     }
 
 </script>
