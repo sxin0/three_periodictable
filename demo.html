@@ -384,29 +384,8 @@
             'image': ''
         }
 
-        var element = document.createElement('div');
-        element.className = 'element';
-        element.style.backgroundColor = 'rgba(0,127,127,' + (Math.random() * 0.5 + 0.25) + ')';
-
-        var symbol = document.createElement('div');
-        symbol.className = 'symbol';
-        element.appendChild(symbol);
-
-        var img = document.createElement('img');
-        img.src = info.image;
-        symbol.appendChild(img);
-
-        var details = document.createElement('div');
-        details.className = 'details';
-        details.innerHTML = '';
-        element.appendChild(details);
-
-
-        var object = new THREE.CSS3DObject(element);
-        object.position.x = Math.random() * 4000 - 2000;
-        object.position.y = Math.random() * 4000 - 2000;
-        object.position.z = Math.random() * 4000 - 2000;
-        scene.add(object);
+        objects = pushCard(info)
+        initCard(objects)
 
     })
 
