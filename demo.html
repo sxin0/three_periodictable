@@ -63,10 +63,10 @@
 
             // 更改展示的图片
             var img = document.getElementsByClassName('element')[CurPersonNum].getElementsByTagName('img')[0];
+            document.getElementsByClassName('element')[CurPersonNum].classList.add('element_hover')
             img.setAttribute('src', 'touxiang.jpg');
             document.getElementsByClassName('element')[CurPersonNum].getElementsByClassName('details')[0].innerHTML = CurPersonNum;
             ++CurPersonNum;
-
             //卡片关闭效果
             setTimeout(function () {
                 $('.show_info').addClass(_out[rand_out]);
@@ -74,6 +74,7 @@
                     $('.show_info').removeClass(_out[rand_out]);
                     $('.show_info').hide();
                 }, 1000);
+                document.getElementsByClassName('element')[CurPersonNum-1].classList.remove('element_hover')
             }, 1500);
 
         }, 1000);
