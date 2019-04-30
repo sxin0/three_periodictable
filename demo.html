@@ -374,7 +374,7 @@
         clearScene()
     })
 
-    //减少卡片
+    //创建卡片
     $('#add').click(function () {
 
         var info = {
@@ -389,7 +389,7 @@
 
     })
 
-    //增加卡片
+    //删除卡片
     $('#remove').click(function () {
         $.each(objects.splice(1,10),function (k,v) {
             console.log(v)
